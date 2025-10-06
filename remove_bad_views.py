@@ -13,8 +13,12 @@ backup_dir = "backup_xml"
 os.makedirs(backup_dir, exist_ok=True)
 #Step 3: go through XML files and set the UseTilt values based on taSolution.log
 for xml_file in xml_files:
-    shutil.copy(xml_file, backup_dir)
-
+    #if the back up already exists, skip copying
+    if os.path.exists(os.path.join(backup_dir, os.path.basename(xml_file))):
+        print(f"Backup for {xml_file} already exists, skipping backup.")
+    else:   
+        shutil.copy(xml_file, backup_dir)
+    
     # taSoliution.log has a header that needs to be skipped to read the data correctly
     log_path = os.path.join("tiltstack", os.path.splitext(os.path.basename(xml_file))[0], "taSolution.log")
     with open(log_path, "r") as f:
@@ -65,7 +69,7 @@ for xml_file in xml_files:
                 print(f"  XML index {i} (view {view_number}) not found in log, setting to False")
         
         # Update the UseTilt element with the new values
-        use_tilt_elem.text = '\n' + '\n'.join(updated_values) + '\n'
+        use_tilt_elem.text = '\n'.join(updated_values)
         print(f"Updated UseTilt values: {len(updated_values)} values, {changes_made} changes made")
         
     tree.write(xml_file)
